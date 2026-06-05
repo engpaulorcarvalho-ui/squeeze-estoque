@@ -399,7 +399,7 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
 // ============================================================
 // DADOS PADRÃO
 // ============================================================
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqDtwbCm9HCm6Xc-UB0NBoRBnIdKW3TmXO64w-zy3nAfUErTm5KCkUOHaXgKhRIwfj/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXJj6VO2qVITZ6bB9Dfe_iXCXEB2sS0D6tMzSXsBhwzG8L3-r1x0XPDnUKYTtjOKqf/exec';
 
 var DEFAULT_USERS = [
   { nome:'Paulo',   pin:'123456', admin:true  },
@@ -417,7 +417,11 @@ var DEFAULT_USERS = [
 function save(k,v){ try{ localStorage.setItem('sqz_'+k, JSON.stringify(v)); }catch(e){} }
 function load(k,d){ try{ var v=localStorage.getItem('sqz_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
 
-function getUsers(){ return load('users', DEFAULT_USERS); }
+function getUsers(){
+  var u = load('users', null);
+  if(!u || u.length===0) return DEFAULT_USERS;
+  return u;
+}
 function getProds(){ return load('prods', []); }
 function getStock(){ return load('stock', []); }
 function getEntradas(){ return load('entradas', []); }
@@ -457,12 +461,13 @@ function loadFromSheets(callback){
     .then(function(r){ return r.json(); })
     .then(function(data){
       if(!data.ok) { callback(false); return; }
-      if(data.usuarios && data.usuarios.length>0)       save('users',       data.usuarios);
-      if(data.produtos && data.produtos.length>0)       save('prods',       data.produtos);
-      if(data.stock    && data.stock.length>=0)         save('stock',       data.stock);
-      if(data.entradas && data.entradas.length>=0)      save('entradas',    data.entradas);
-      if(data.descartes && data.descartes.length>=0)    save('descartes',   data.descartes);
-      if(data.fechamentos && data.fechamentos.length>=0) save('fechamentos', data.fechamentos);
+      // Só sobrescreve usuários se o Sheets tiver dados válidos
+      if(data.usuarios && data.usuarios.length>0) save('users', data.usuarios);
+      if(data.produtos && data.produtos.length>0) save('prods', data.produtos);
+      if(data.stock    && data.stock.length>0)    save('stock', data.stock);
+      if(data.entradas && data.entradas.length>0) save('entradas', data.entradas);
+      if(data.descartes && data.descartes.length>0) save('descartes', data.descartes);
+      if(data.fechamentos && data.fechamentos.length>0) save('fechamentos', data.fechamentos);
       callback(true);
     })
     .catch(function(e){ console.log('Sheets error:', e); callback(false); });
