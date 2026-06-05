@@ -418,9 +418,8 @@ function save(k,v){ try{ localStorage.setItem('sqz_'+k, JSON.stringify(v)); }cat
 function load(k,d){ try{ var v=localStorage.getItem('sqz_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
 
 function getUsers(){
-  var u = load('users', null);
-  if(!u || u.length===0) return DEFAULT_USERS;
-  return u;
+  // Sempre usa os usuários padrão do código como base
+  return DEFAULT_USERS;
 }
 function getProds(){ return load('prods', []); }
 function getStock(){ return load('stock', []); }
@@ -461,8 +460,8 @@ function loadFromSheets(callback){
     .then(function(r){ return r.json(); })
     .then(function(data){
       if(!data.ok) { callback(false); return; }
-      // Só sobrescreve usuários se o Sheets tiver dados válidos
-      if(data.usuarios && data.usuarios.length>0) save('users', data.usuarios);
+      // Usuários gerenciados no código — não sobrescreve do Sheets
+      // if(data.usuarios && data.usuarios.length>0) save('users', data.usuarios);
       if(data.produtos && data.produtos.length>0) save('prods', data.produtos);
       if(data.stock    && data.stock.length>0)    save('stock', data.stock);
       if(data.entradas && data.entradas.length>0) save('entradas', data.entradas);
