@@ -484,6 +484,11 @@ function showSyncStatus(msg){
 // UTILS
 // ============================================================
 function uid(){ return 'SQZ-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase(); }
+
+function removeAcentos(str){
+  if(!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x00-\x7F]/g,'');
+}
 function fmtDate(s){ if(!s) return '00/00/0000'; var p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
 function diasRestantes(s){
   if(!s) return 9999;
@@ -803,7 +808,7 @@ function etUpdate(){
 
   var qDiv = document.getElementById('et-qrcode');
   qDiv.innerHTML = '';
-  var qData = 'ID:'+etUID+'|PROD:'+nome+'|COND:'+cond+'|POR:1/'+qtd+'|MAN:'+fManip+'|VAL:'+fVal+'|PESO:'+fPeso+'|RESP:'+fResp;
+  var qData = 'ID:'+etUID+'|PROD:'+removeAcentos(nome)+'|COND:'+removeAcentos(cond)+'|POR:1/'+qtd+'|MAN:'+fManip+'|VAL:'+fVal+'|PESO:'+fPeso+'|RESP:'+removeAcentos(fResp);
   try{ new QRCode(qDiv,{text:qData,width:54,height:54,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M}); }catch(e){}
 }
 
@@ -856,7 +861,7 @@ function imprimirEtiquetas(){
 
   for(var i=1;i<=qtd;i++){
     var id = uid();
-    var qData = 'ID:'+id+'|PROD:'+prod.nome.toUpperCase()+'|COND:'+prod.cond+'|POR:'+i+'/'+qtd+'|MAN:'+fManip+'|VAL:'+fVal+'|PESO:'+peso+'|RESP:'+resp;
+    var qData = 'ID:'+id+'|PROD:'+removeAcentos(prod.nome.toUpperCase())+'|COND:'+removeAcentos(prod.cond)+'|POR:'+i+'/'+qtd+'|MAN:'+fManip+'|VAL:'+fVal+'|PESO:'+peso+'|RESP:'+removeAcentos(resp);
     var wrap = document.createElement('div');
     wrap.style.cssText = 'width:100mm;height:70mm;background:white;border:1.5px solid #000;color:#000;font-family:Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden;page-break-after:always;';
     wrap.innerHTML =
