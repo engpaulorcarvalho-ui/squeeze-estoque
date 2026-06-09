@@ -384,9 +384,79 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
     <button class="nav-btn" id="nav-etiqueta" onclick="showTab('etiqueta')"><span class="ico">🏷</span>Etiqueta</button>
     <button class="nav-btn" id="nav-estoque" onclick="showTab('estoque')"><span class="ico">📦</span>Estoque</button>
     <button class="nav-btn" id="nav-fechamento" onclick="showTab('fechamento')"><span class="ico">📋</span>Fechamento</button>
+    <button class="nav-btn" id="nav-indicadores" onclick="showTab('indicadores')"><span class="ico">📊</span>Indicadores</button>
     <button class="nav-btn admin-only" id="nav-admin" onclick="showTab('admin')"><span class="ico">⚙️</span>Admin</button>
   </nav>
 </div>
+
+    <!-- INDICADORES -->
+    <div class="tab" id="tab-indicadores">
+      <div style="text-align:center;padding:8px 0 12px;">
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">Indicadores iFood</div>
+        <div id="ind-semana" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+
+        <div class="card" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⭐ Avaliação</div>
+          <div id="ind-avaliacao-val" style="font-size:36px;font-weight:700;line-height:1;">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Meta: 4,9</div>
+          <div id="ind-avaliacao-status" style="font-size:11px;font-weight:700;margin-top:6px;"></div>
+          <div id="ind-avaliacao-bonus" style="font-size:13px;font-weight:700;margin-top:6px;"></div>
+        </div>
+
+        <div class="card" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">❌ Cancelamentos</div>
+          <div id="ind-cancelamentos-val" style="font-size:36px;font-weight:700;line-height:1;">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Meta: 0</div>
+          <div id="ind-cancelamentos-status" style="font-size:11px;font-weight:700;margin-top:6px;"></div>
+          <div id="ind-cancelamentos-bonus" style="font-size:13px;font-weight:700;margin-top:6px;"></div>
+        </div>
+
+        <div class="card" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⚠️ Canc. Parciais</div>
+          <div id="ind-parciais-val" style="font-size:36px;font-weight:700;line-height:1;">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Meta: 0</div>
+          <div id="ind-parciais-status" style="font-size:11px;font-weight:700;margin-top:6px;"></div>
+          <div id="ind-parciais-bonus" style="font-size:13px;font-weight:700;margin-top:6px;"></div>
+        </div>
+
+        <div class="card" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⏰ Acordo Atraso</div>
+          <div id="ind-atraso-val" style="font-size:36px;font-weight:700;line-height:1;">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Meta: ≤ 5</div>
+          <div id="ind-atraso-status" style="font-size:11px;font-weight:700;margin-top:6px;"></div>
+          <div id="ind-atraso-bonus" style="font-size:13px;font-weight:700;margin-top:6px;"></div>
+        </div>
+
+      </div>
+
+      <!-- Total bonificação -->
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💰 Total Bonificação</div>
+        <div id="ind-total-bonus" style="font-size:42px;font-weight:900;color:var(--accent);line-height:1;">R$ —</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;">Máximo: R$ 40,00</div>
+      </div>
+
+      <!-- Formulário admin para inserir indicadores -->
+      <div class="card admin-only">
+        <div class="card-title">✏️ Atualizar Indicadores</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Atualizar toda segunda-feira</div>
+        <div class="fr">
+          <div class="fg"><label>⭐ Avaliação</label><input type="number" id="adm-ind-aval" step="0.1" min="0" max="5" placeholder="Ex: 4.9"></div>
+          <div class="fg"><label>❌ Cancelamentos</label><input type="number" id="adm-ind-canc" min="0" placeholder="Ex: 0"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>⚠️ Canc. Parciais</label><input type="number" id="adm-ind-parc" min="0" placeholder="Ex: 0"></div>
+          <div class="fg"><label>⏰ Acordo Atraso</label><input type="number" id="adm-ind-atra" min="0" placeholder="Ex: 3"></div>
+        </div>
+        <div class="fg"><label>Semana de referência</label><input type="text" id="adm-ind-semana" placeholder="Ex: 02/06 a 08/06/2026"></div>
+        <button class="btn btn-p" onclick="salvarIndicadores()">Salvar Indicadores</button>
+      </div>
+
+      <div id="ind-atualizado" style="font-size:11px;color:var(--text2);text-align:center;margin-top:8px;"></div>
+    </div>
 
 <div id="print-zone" style="display:none;"></div>
 
@@ -461,7 +531,8 @@ function syncToSheets(){
       entradas:    getEntradas(),
       descartes:   getDescartes(),
       fechamentos: getFechamentos(),
-      items:       getItems()
+      items:       getItems(),
+      indicadores: getIndicadores()
     };
     fetch(SCRIPT_URL, {
       method: 'POST',
@@ -498,6 +569,7 @@ function loadFromSheets(callback){
       if(data.descartes && data.descartes.length>0) save('descartes', data.descartes);
       if(data.fechamentos && data.fechamentos.length>0) save('fechamentos', data.fechamentos);
       if(data.items && data.items.length>0) save('items', data.items);
+      if(data.indicadores) save('indicadores', data.indicadores);
       callback(true);
     })
     .catch(function(e){ console.log('Sheets error:', e); callback(false); });
@@ -558,6 +630,107 @@ function normData(val){
   return s;
 }
 function dotColor(d){ if(d<0||d<=2) return '#e05050'; if(d<=5) return '#e0a030'; return '#50a870'; }
+
+// ============================================================
+// INDICADORES
+// ============================================================
+function getIndicadores(){
+  return load('indicadores', { avaliacao:null, cancelamentos:null, parciais:null, atraso:null, semana:'', atualizado:'' });
+}
+
+function salvarIndicadores(){
+  var aval = document.getElementById('adm-ind-aval').value;
+  var canc = document.getElementById('adm-ind-canc').value;
+  var parc = document.getElementById('adm-ind-parc').value;
+  var atra = document.getElementById('adm-ind-atra').value;
+  var sem  = document.getElementById('adm-ind-semana').value;
+
+  if(!aval && !canc && !parc && !atra) return alert('Preencha pelo menos um indicador!');
+
+  var ind = {
+    avaliacao:    aval !== '' ? parseFloat(aval) : null,
+    cancelamentos: canc !== '' ? parseInt(canc) : null,
+    parciais:     parc !== '' ? parseInt(parc) : null,
+    atraso:       atra !== '' ? parseInt(atra) : null,
+    semana:       sem,
+    atualizado:   fmtDateTime(new Date()) + ' · ' + (currentUser ? currentUser.nome : '—')
+  };
+
+  save('indicadores', ind);
+  syncToSheets();
+  renderIndicadores();
+  alert('✅ Indicadores salvos!');
+}
+
+function renderIndicadores(){
+  var ind = getIndicadores();
+
+  // Semana
+  var semEl = document.getElementById('ind-semana');
+  if(semEl) semEl.textContent = ind.semana ? 'Semana: '+ind.semana : '';
+
+  // Atualizado
+  var atEl = document.getElementById('ind-atualizado');
+  if(atEl) atEl.textContent = ind.atualizado ? 'Atualizado: '+ind.atualizado : '';
+
+  // Avaliação (meta >= 4.9)
+  setIndicador('avaliacao', ind.avaliacao, function(v){ return v >= 4.9; }, ind.avaliacao !== null ? ind.avaliacao.toFixed(1) : '—');
+
+  // Cancelamentos (meta = 0)
+  setIndicador('cancelamentos', ind.cancelamentos, function(v){ return v === 0; }, ind.cancelamentos !== null ? String(ind.cancelamentos) : '—');
+
+  // Parciais (meta = 0)
+  setIndicador('parciais', ind.parciais, function(v){ return v === 0; }, ind.parciais !== null ? String(ind.parciais) : '—');
+
+  // Acordo atraso (meta <= 5)
+  setIndicador('atraso', ind.atraso, function(v){ return v <= 5; }, ind.atraso !== null ? String(ind.atraso) : '—');
+
+  // Total bonificação
+  var totalEl = document.getElementById('ind-total-bonus');
+  if(totalEl){
+    var hasData = ind.avaliacao !== null || ind.cancelamentos !== null || ind.parciais !== null || ind.atraso !== null;
+    totalEl.textContent = hasData ? 'R$ '+calcTotalBonus(ind)+',00' : 'R$ —';
+    totalEl.style.color = 'var(--accent)';
+  }
+}
+
+var BONUS = { avaliacao:15, cancelamentos:10, parciais:5, atraso:10 };
+
+function setIndicador(key, val, metaFn, display){
+  var valEl   = document.getElementById('ind-'+key+'-val');
+  var stEl    = document.getElementById('ind-'+key+'-status');
+  var bonusEl = document.getElementById('ind-'+key+'-bonus');
+  if(!valEl || !stEl) return;
+
+  if(val === null || val === undefined){
+    valEl.textContent = '—';
+    valEl.style.color = 'var(--text2)';
+    stEl.textContent  = '';
+    if(bonusEl) bonusEl.textContent = '';
+    return;
+  }
+
+  var ok = metaFn(val);
+  valEl.textContent = display;
+  valEl.style.color = ok ? 'var(--success)' : 'var(--danger)';
+  stEl.textContent  = ok ? '✅ Meta atingida' : '❌ Abaixo da meta';
+  stEl.style.color  = ok ? 'var(--success)' : 'var(--danger)';
+
+  if(bonusEl){
+    var b = BONUS[key] || 0;
+    bonusEl.textContent = ok ? '+R$ '+b+',00' : '+R$ 0,00';
+    bonusEl.style.color = ok ? 'var(--accent)' : 'var(--text2)';
+  }
+}
+
+function calcTotalBonus(ind){
+  var total = 0;
+  if(ind.avaliacao !== null    && ind.avaliacao >= 4.9)    total += 15;
+  if(ind.cancelamentos !== null && ind.cancelamentos === 0) total += 10;
+  if(ind.parciais !== null     && ind.parciais === 0)       total += 5;
+  if(ind.atraso !== null       && ind.atraso <= 5)          total += 10;
+  return total;
+}
 
 // ============================================================
 // ESTADO LOGIN
@@ -774,6 +947,7 @@ function showTab(name){
   if(name==='etiqueta')  { fillProdSelects(); etUpdate(); }
   if(name==='estoque')   renderEstoque();
   if(name==='fechamento') renderFechamento();
+  if(name==='indicadores') renderIndicadores();
   if(name==='admin')     renderAdmin();
 }
 
