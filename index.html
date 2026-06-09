@@ -410,7 +410,7 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWsTRLT2meMEykRRV9JY8Yu6EZlRxefNA7RIcOGQKvDAe8FnoZXix7GzMzSbs0tNbz/exec';
 
 var DEFAULT_ITEMS = [
-  { id:'item-pao',     nome:'PÃO HB TRAD 9CM C VERNIZ', unidade:'unidades', minimo:144,  qtd:0 },
+  { id:'item-pao',     nome:'PÃO HB TRAD 9CM C VERNIZ', unidade:'pães',     minimo:144,  qtd:0, conversao:{ fator:0.020833, unidade2:'caixas', label:'caixa', plural:'caixas', divisor:48 } },
   { id:'item-carne',   nome:'BLEND HAMBURGER',           unidade:'bolas',    minimo:288,  qtd:0, conversao:{ fator:0.05, unidadeKg:'kg' } },
   { id:'item-cookien', nome:'COOKIES NUTELLA',           unidade:'unidades', minimo:5,    qtd:0 },
   { id:'item-cookieg', nome:'COOKIES NINHO',             unidade:'unidades', minimo:5,    qtd:0 }
@@ -453,7 +453,8 @@ function syncToSheets(){
       stock:       getStock(),
       entradas:    getEntradas(),
       descartes:   getDescartes(),
-      fechamentos: getFechamentos()
+      fechamentos: getFechamentos(),
+      items:       getItems()
     };
     fetch(SCRIPT_URL, {
       method: 'POST',
@@ -489,6 +490,7 @@ function loadFromSheets(callback){
       }
       if(data.descartes && data.descartes.length>0) save('descartes', data.descartes);
       if(data.fechamentos && data.fechamentos.length>0) save('fechamentos', data.fechamentos);
+      if(data.items && data.items.length>0) save('items', data.items);
       callback(true);
     })
     .catch(function(e){ console.log('Sheets error:', e); callback(false); });
@@ -798,9 +800,18 @@ function renderHome(){
       var qtdDisplay = item.qtd+' '+item.unidade;
       var minimoDisplay = item.minimo+' '+item.unidade;
       if(item.conversao){
-        var kg = (parseFloat(item.qtd) * item.conversao.fator).toFixed(3).replace('.',',');
-        qtdDisplay = item.qtd+' bolas ('+kg+' kg)';
-        minimoDisplay = item.minimo+' bolas ('+( item.minimo*item.conversao.fator).toFixed(1)+' kg)';
+        if(item.conversao.divisor){
+          // Conversão por divisão (ex: pães -> caixas)
+          var caixas = (parseFloat(item.qtd) / item.conversao.divisor).toFixed(2).replace('.',',');
+          var caixasMin = (item.minimo / item.conversao.divisor).toFixed(2).replace('.',',');
+          qtdDisplay = item.qtd+' pães ('+caixas+' '+item.conversao.plural+')';
+          minimoDisplay = item.minimo+' pães ('+caixasMin+' '+item.conversao.plural+')';
+        } else {
+          // Conversão por multiplicação (ex: bolas -> kg)
+          var kg = (parseFloat(item.qtd) * item.conversao.fator).toFixed(3).replace('.',',');
+          qtdDisplay = item.qtd+' bolas ('+kg+' kg)';
+          minimoDisplay = item.minimo+' bolas ('+(item.minimo*item.conversao.fator).toFixed(1)+' kg)';
+        }
       }
       return '<div class="stock-item">'+
         '<div class="stock-dot" style="background:'+cor+'"></div>'+
@@ -1040,8 +1051,13 @@ function updateItemConv(el){
   var conv = document.getElementById('conv-'+id);
   if(!conv) return;
   var qtd = parseFloat(el.value)||0;
-  var kg = (qtd * item.conversao.fator).toFixed(3).replace('.',',');
-  conv.textContent = '= '+kg+' kg';
+  if(item.conversao.divisor){
+    var caixas = (qtd / item.conversao.divisor).toFixed(2).replace('.',',');
+    conv.textContent = '= '+caixas+' '+item.conversao.plural;
+  } else {
+    var kg = (qtd * item.conversao.fator).toFixed(3).replace('.',',');
+    conv.textContent = '= '+kg+' kg';
+  }
 }
 
 function renderFechamento(){
