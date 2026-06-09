@@ -994,7 +994,15 @@ function renderFechamento(){
   }
   el.innerHTML = stock.map(function(item){
     var p = prods.filter(function(x){ return x.id===item.prodId; })[0];
-    return '<div class="fech-item"><div class="fech-name">'+(p?p.nome:item.nome)+'</div><div class="fech-meta">Em estoque: <strong>'+fmtPeso(item.peso)+'</strong> · Val: '+fmtDate(item.validade)+'</div><div class="fg"><label>Peso atual (kg)</label><input type="number" step="0.001" min="0" placeholder="0.000" id="fi-'+item.id+'"></div></div>';
+    var qtdInfo = item.qtd ? '<strong>'+item.qtd+'</strong> '+(item.qtd===1?'recipiente':'recipientes')+' · ' : '';
+    return '<div class="fech-item">'+
+      '<div class="fech-name">'+(p?p.nome:item.nome)+'</div>'+
+      '<div class="fech-meta">'+qtdInfo+'Peso: <strong>'+fmtPeso(item.peso)+'</strong> · Val: '+fmtDate(item.validade)+'</div>'+
+      '<div class="fr">'+
+        '<div class="fg"><label>Recipientes restantes</label><input type="number" min="0" placeholder="0" id="fq-'+item.id+'"></div>'+
+        '<div class="fg"><label>Peso atual (kg)</label><input type="number" step="0.001" min="0" placeholder="0.000" id="fi-'+item.id+'"></div>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 
@@ -1006,11 +1014,13 @@ function confirmarFechamento(){
 
   itens.forEach(function(item){
     var inp = document.getElementById('fi-'+item.id);
+    var inpQ = document.getElementById('fq-'+item.id);
     if(!inp||inp.value===''){ok=false;return;}
     var pFinal = parseFloat(inp.value);
+    var qtdFinal = inpQ && inpQ.value!=='' ? parseInt(inpQ.value) : item.qtd;
     var consumido = Math.max(0, item.peso - pFinal);
-    fechs.push({id:uid(),itemId:item.id,nome:item.nome,pInicial:item.peso,pFinal:pFinal,consumido:consumido,data:hoje()});
-    for(var i=0;i<stock.length;i++){ if(stock[i].id===item.id){ stock[i].peso=pFinal; break; } }
+    fechs.push({id:uid(),itemId:item.id,nome:item.nome,pInicial:item.peso,pFinal:pFinal,consumido:consumido,qtdInicial:item.qtd,qtdFinal:qtdFinal,data:hoje()});
+    for(var i=0;i<stock.length;i++){ if(stock[i].id===item.id){ stock[i].peso=pFinal; stock[i].qtd=qtdFinal; break; } }
   });
 
   if(!ok) return alert('Preencha o peso atual de todos os itens!');
