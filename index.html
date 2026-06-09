@@ -305,7 +305,9 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <div class="fg"><label>Produto</label><select id="desc-prod"><option value="">Selecione...</option></select></div>
         <div class="fr">
           <div class="fg"><label>Peso descartado (kg)</label><input type="number" id="desc-peso" step="0.001" min="0" placeholder="0.000"></div>
-          <div class="fg"><label>Responsável</label><input type="text" id="desc-resp" placeholder="Nome"></div>
+          <div class="fg"><label>Responsável</label>
+          <select id="desc-resp"></select>
+        </div>
         </div>
         <div class="fg"><label>Motivo</label>
           <select id="desc-motivo">
@@ -776,6 +778,14 @@ function renderHome(){
 // ETIQUETA
 // ============================================================
 function fillProdSelects(){
+  // Preenche select de responsável no descarte
+  var users = getUsers();
+  var respSel = document.getElementById('desc-resp');
+  if(respSel){
+    respSel.innerHTML = '<option value="">Selecione...</option>' +
+      users.map(function(u){ return '<option value="'+u.nome+'">'+u.nome+'</option>'; }).join('');
+  }
+
   var prods = getProds();
   var opts = '<option value="">Selecione...</option>'+prods.map(function(p){ return '<option value="'+p.id+'">'+p.nome+'</option>'; }).join('');
   document.getElementById('et-prod').innerHTML = opts;
