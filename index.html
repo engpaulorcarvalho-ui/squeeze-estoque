@@ -728,7 +728,17 @@ function renderHome(){
       if(item.conv.divisor){var cx=(parseFloat(item.qtd)/item.conv.divisor).toFixed(2).replace('.',',');qtdDisplay=item.qtd+' pães ('+cx+' caixas)';minDisplay=item.minimo+' pães ('+(item.minimo/item.conv.divisor).toFixed(2)+' caixas)';}
       else if(item.conv.fator){var kg=(parseFloat(item.qtd)*item.conv.fator).toFixed(3).replace('.',',');qtdDisplay=item.qtd+' bolas ('+kg+' kg)';minDisplay=item.minimo+' bolas ('+(item.minimo*item.conv.fator).toFixed(1)+' kg)';}
     }
-    return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+item.nome+aviso+'</div><div class="stock-meta">Mínimo: '+minDisplay+'</div></div><div class="stock-right"><div class="stock-peso" style="color:'+cor+'">'+qtdDisplay+'</div></div></div>';
+    var comprar='';
+    if(baixo){
+      var falta=parseFloat(item.minimo)-parseFloat(item.qtd);
+      var compDisplay=falta+' '+item.unidade;
+      if(item.conv){
+        if(item.conv.divisor)compDisplay=falta+' pães ('+(falta/item.conv.divisor).toFixed(2)+' caixas)';
+        else if(item.conv.fator)compDisplay=falta+' bolas ('+(falta*item.conv.fator).toFixed(3)+' kg)';
+      }
+      comprar='<div style="font-size:11px;color:#e0a030;margin-top:4px;font-weight:600;">🛒 Comprar: '+compDisplay+'</div>';
+    }
+    return '<div class="stock-item" style="flex-direction:column;align-items:flex-start;gap:6px;"><div style="display:flex;align-items:center;gap:12px;width:100%;"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+item.nome+aviso+'</div><div class="stock-meta">Mínimo: '+minDisplay+'</div></div><div class="stock-right"><div class="stock-peso" style="color:'+cor+'">'+qtdDisplay+'</div></div></div>'+comprar+'</div>';
   }).join('');
 }
 
