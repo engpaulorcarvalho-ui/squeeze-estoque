@@ -1032,14 +1032,14 @@ function registrarDescarte(){
 // ============================================================
 // FECHAMENTO
 // ============================================================
-function updateItemConv(itemId){
+function updateItemConv(el){
+  var id = el.id.replace('fitem-','');
   var items = getItems();
-  var item = items.filter(function(i){ return i.id===itemId; })[0];
+  var item = items.filter(function(i){ return i.id===id; })[0];
   if(!item || !item.conversao) return;
-  var inp = document.getElementById('fitem-'+itemId);
-  var conv = document.getElementById('conv-'+itemId);
-  if(!inp || !conv) return;
-  var qtd = parseFloat(inp.value)||0;
+  var conv = document.getElementById('conv-'+id);
+  if(!conv) return;
+  var qtd = parseFloat(el.value)||0;
   var kg = (qtd * item.conversao.fator).toFixed(3).replace('.',',');
   conv.textContent = '= '+kg+' kg';
 }
@@ -1076,7 +1076,7 @@ function renderFechamento(){
         '<div class="fech-name" style="color:'+cor+'">'+item.nome+(baixo?' ⚠️':'')+'</div>'+
         '<div class="fech-meta">Atual: <strong>'+item.qtd+' '+item.unidade+'</strong> · Mínimo: '+item.minimo+' '+item.unidade+'</div>'+
         '<div class="fg"><label>Quantidade atual ('+item.unidade+')</label>'+
-        '<input type="number" step="1" min="0" placeholder="0" id="fitem-'+item.id+'" oninput="updateItemConv(''+item.id+'')"></div>'+
+        '<input type="number" step="1" min="0" placeholder="0" id="fitem-'+item.id+'" oninput="updateItemConv(this)"></div>'+
         (item.conversao ? '<div style="font-size:11px;color:var(--text2);margin-top:4px;" id="conv-'+item.id+'">= 0,000 kg</div>' : '')+
       '</div>';
     }).join('');
