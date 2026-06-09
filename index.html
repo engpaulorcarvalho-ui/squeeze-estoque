@@ -411,7 +411,7 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWsTRLT2meMEykRRV9JY8
 
 var DEFAULT_ITEMS = [
   { id:'item-pao',     nome:'PÃO HB TRAD 9CM C VERNIZ', unidade:'unidades', minimo:144,  qtd:0 },
-  { id:'item-carne',   nome:'BLEND HAMBURGER',           unidade:'kg',       minimo:14.4, qtd:0 },
+  { id:'item-carne',   nome:'BLEND HAMBURGER',           unidade:'bolas',    minimo:288,  qtd:0, conversao:{ fator:0.05, unidadeKg:'kg' } },
   { id:'item-cookien', nome:'COOKIES NUTELLA',           unidade:'unidades', minimo:5,    qtd:0 },
   { id:'item-cookieg', nome:'COOKIES NINHO',             unidade:'unidades', minimo:5,    qtd:0 }
 ];
@@ -795,11 +795,18 @@ function renderHome(){
       var baixo = parseFloat(item.qtd) <= parseFloat(item.minimo);
       var cor = baixo ? '#e05050' : '#50a870';
       var aviso = baixo ? ' ⚠️' : '';
+      var qtdDisplay = item.qtd+' '+item.unidade;
+      var minimoDisplay = item.minimo+' '+item.unidade;
+      if(item.conversao){
+        var kg = (parseFloat(item.qtd) * item.conversao.fator).toFixed(3).replace('.',',');
+        qtdDisplay = item.qtd+' bolas ('+kg+' kg)';
+        minimoDisplay = item.minimo+' bolas ('+( item.minimo*item.conversao.fator).toFixed(1)+' kg)';
+      }
       return '<div class="stock-item">'+
         '<div class="stock-dot" style="background:'+cor+'"></div>'+
         '<div class="stock-info"><div class="stock-name">'+item.nome+aviso+'</div>'+
-        '<div class="stock-meta">Mínimo: '+item.minimo+' '+item.unidade+'</div></div>'+
-        '<div class="stock-right"><div class="stock-peso" style="color:'+cor+'">'+item.qtd+' '+item.unidade+'</div></div>'+
+        '<div class="stock-meta">Mínimo: '+minimoDisplay+'</div></div>'+
+        '<div class="stock-right"><div class="stock-peso" style="color:'+cor+'">'+qtdDisplay+'</div></div>'+
       '</div>';
     }).join('');
   }
@@ -1025,6 +1032,18 @@ function registrarDescarte(){
 // ============================================================
 // FECHAMENTO
 // ============================================================
+function updateItemConv(itemId){
+  var items = getItems();
+  var item = items.filter(function(i){ return i.id===itemId; })[0];
+  if(!item || !item.conversao) return;
+  var inp = document.getElementById('fitem-'+itemId);
+  var conv = document.getElementById('conv-'+itemId);
+  if(!inp || !conv) return;
+  var qtd = parseFloat(inp.value)||0;
+  var kg = (qtd * item.conversao.fator).toFixed(3).replace('.',',');
+  conv.textContent = '= '+kg+' kg';
+}
+
 function renderFechamento(){
   var prods = getProds();
   var stock = getStock().filter(function(i){ return i.peso>0; });
@@ -1057,7 +1076,8 @@ function renderFechamento(){
         '<div class="fech-name" style="color:'+cor+'">'+item.nome+(baixo?' ⚠️':'')+'</div>'+
         '<div class="fech-meta">Atual: <strong>'+item.qtd+' '+item.unidade+'</strong> · Mínimo: '+item.minimo+' '+item.unidade+'</div>'+
         '<div class="fg"><label>Quantidade atual ('+item.unidade+')</label>'+
-        '<input type="number" step="'+(item.unidade==='kg'?'0.1':'1')+'" min="0" placeholder="0" id="fitem-'+item.id+'"></div>'+
+        '<input type="number" step="1" min="0" placeholder="0" id="fitem-'+item.id+'" oninput="updateItemConv(''+item.id+'')"></div>'+
+        (item.conversao ? '<div style="font-size:11px;color:var(--text2);margin-top:4px;" id="conv-'+item.id+'">= 0,000 kg</div>' : '')+
       '</div>';
     }).join('');
   }
