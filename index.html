@@ -243,6 +243,10 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <div class="card-title">📦 Estoque Atual</div>
         <div id="home-estoque"></div>
       </div>
+      <div class="card">
+        <div class="card-title">🧮 Contagem Diária</div>
+        <div id="home-items"></div>
+      </div>
     </div>
 
     <!-- ETIQUETA -->
@@ -324,6 +328,8 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <div class="card-title">📋 Fechamento Diário</div>
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Informe o peso atual de cada item em estoque.</p>
         <div id="fech-list"></div>
+        <div class="card-title mt16">🧮 Contagem de Estoque Geral</div>
+        <div id="fech-items-list"></div>
         <button class="btn btn-p mt8" onclick="confirmarFechamento()">Confirmar Fechamento</button>
       </div>
     </div>
@@ -403,6 +409,13 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
 // ============================================================
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWsTRLT2meMEykRRV9JY8Yu6EZlRxefNA7RIcOGQKvDAe8FnoZXix7GzMzSbs0tNbz/exec';
 
+var DEFAULT_ITEMS = [
+  { id:'item-pao',     nome:'PÃO HB TRAD 9CM C VERNIZ', unidade:'unidades', minimo:144,  qtd:0 },
+  { id:'item-carne',   nome:'BLEND HAMBURGER',           unidade:'kg',       minimo:14.4, qtd:0 },
+  { id:'item-cookien', nome:'COOKIES NUTELLA',           unidade:'unidades', minimo:5,    qtd:0 },
+  { id:'item-cookieg', nome:'COOKIES NINHO',             unidade:'unidades', minimo:5,    qtd:0 }
+];
+
 var DEFAULT_USERS = [
   { nome:'Paulo',   pin:'123456', admin:true  },
   { nome:'Gabriel', pin:'654321', admin:true  },
@@ -428,6 +441,7 @@ function getStock(){ return load('stock', []); }
 function getEntradas(){ return load('entradas', []); }
 function getDescartes(){ return load('descartes', []); }
 function getFechamentos(){ return load('fechamentos', []); }
+function getItems(){ return load('items', DEFAULT_ITEMS); }
 
 // Sincroniza tudo para o Sheets (roda em background)
 function syncToSheets(){
@@ -772,6 +786,23 @@ function renderHome(){
       return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+qtdInfo+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
     }).join('');
   }
+
+  // Contagem diária
+  var iEl = document.getElementById('home-items');
+  var items = getItems();
+  if(iEl){
+    iEl.innerHTML = items.map(function(item){
+      var baixo = parseFloat(item.qtd) <= parseFloat(item.minimo);
+      var cor = baixo ? '#e05050' : '#50a870';
+      var aviso = baixo ? ' ⚠️' : '';
+      return '<div class="stock-item">'+
+        '<div class="stock-dot" style="background:'+cor+'"></div>'+
+        '<div class="stock-info"><div class="stock-name">'+item.nome+aviso+'</div>'+
+        '<div class="stock-meta">Mínimo: '+item.minimo+' '+item.unidade+'</div></div>'+
+        '<div class="stock-right"><div class="stock-peso" style="color:'+cor+'">'+item.qtd+' '+item.unidade+'</div></div>'+
+      '</div>';
+    }).join('');
+  }
 }
 
 // ============================================================
@@ -1014,6 +1045,22 @@ function renderFechamento(){
       '</div>'+
     '</div>';
   }).join('');
+
+  // Itens de estoque geral
+  var iEl = document.getElementById('fech-items-list');
+  if(iEl){
+    var items = getItems();
+    iEl.innerHTML = items.map(function(item){
+      var baixo = parseFloat(item.qtd) <= parseFloat(item.minimo);
+      var cor = baixo ? 'var(--danger)' : 'var(--text2)';
+      return '<div class="fech-item">'+
+        '<div class="fech-name" style="color:'+cor+'">'+item.nome+(baixo?' ⚠️':'')+'</div>'+
+        '<div class="fech-meta">Atual: <strong>'+item.qtd+' '+item.unidade+'</strong> · Mínimo: '+item.minimo+' '+item.unidade+'</div>'+
+        '<div class="fg"><label>Quantidade atual ('+item.unidade+')</label>'+
+        '<input type="number" step="'+(item.unidade==='kg'?'0.1':'1')+'" min="0" placeholder="0" id="fitem-'+item.id+'"></div>'+
+      '</div>';
+    }).join('');
+  }
 }
 
 function confirmarFechamento(){
@@ -1036,6 +1083,15 @@ function confirmarFechamento(){
   if(!ok) return alert('Preencha o peso atual de todos os itens!');
   save('stock',stock);
   save('fechamentos',fechs);
+
+  // Salva contagem dos itens gerais
+  var items = getItems();
+  items.forEach(function(item){
+    var inp = document.getElementById('fitem-'+item.id);
+    if(inp && inp.value !== '') item.qtd = parseFloat(inp.value);
+  });
+  save('items', items);
+
   syncToSheets();
   alert('✅ Fechamento registrado!');
   renderHome();
