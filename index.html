@@ -738,7 +738,8 @@ function renderHome(){
       var p = prods.filter(function(x){ return x.id===item.prodId; })[0];
       var d = diasRestantes(item.validade);
       var cor = dotColor(d);
-      return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
+      var qtdInfo = item.qtd ? ' · '+item.qtd+' '+( item.qtd===1?'recipiente':'recipientes') : '';
+      return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+qtdInfo+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
     }).join('');
   }
 }
@@ -824,15 +825,16 @@ function registrarEntrada(){
   var resp = currentUser ? currentUser.nome : '—';
   var manip = document.getElementById('et-manip').value;
 
+  var qtd = parseInt(document.getElementById('et-qtd').value)||1;
   var entradas = getEntradas();
-  entradas.push({id:uid(),prodId:prod.id,nome:prod.nome,peso:peso,validade:val,manipulacao:manip,responsavel:resp,data:hoje()});
+  entradas.push({id:uid(),prodId:prod.id,nome:prod.nome,peso:peso,validade:val,manipulacao:manip,responsavel:resp,qtd:qtd,data:hoje()});
   save('entradas',entradas);
 
   var stock = getStock();
   var idx = -1;
   for(var i=0;i<stock.length;i++){ if(stock[i].prodId===prod.id&&stock[i].validade===val){ idx=i; break; } }
-  if(idx>=0) stock[idx].peso += peso;
-  else stock.push({id:uid(),prodId:prod.id,nome:prod.nome,cond:prod.cond,validade:val,peso:peso});
+  if(idx>=0){ stock[idx].peso += peso; stock[idx].qtd = (stock[idx].qtd||0) + qtd; }
+  else stock.push({id:uid(),prodId:prod.id,nome:prod.nome,cond:prod.cond,validade:val,peso:peso,qtd:qtd});
   save('stock',stock);
 
   syncToSheets();
@@ -917,7 +919,8 @@ function renderEstoque(){
       var p = prods.filter(function(x){ return x.id===item.prodId; })[0];
       var d = diasRestantes(item.validade);
       var cor = dotColor(d);
-      return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
+      var qtdInfo = item.qtd ? ' · '+item.qtd+' '+( item.qtd===1?'recipiente':'recipientes') : '';
+      return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+qtdInfo+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
     }).join('');
   }
   fillProdSelects();
