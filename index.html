@@ -463,8 +463,14 @@ function loadFromSheets(callback){
       // Usuários gerenciados no código — não sobrescreve do Sheets
       // if(data.usuarios && data.usuarios.length>0) save('users', data.usuarios);
       if(data.produtos && data.produtos.length>0) save('prods', data.produtos);
-      if(data.stock    && data.stock.length>0)    save('stock', data.stock);
-      if(data.entradas && data.entradas.length>0) save('entradas', data.entradas);
+      if(data.stock && data.stock.length>0){
+        data.stock = data.stock.map(function(i){ i.validade=normData(i.validade); return i; });
+        save('stock', data.stock);
+      }
+      if(data.entradas && data.entradas.length>0){
+        data.entradas = data.entradas.map(function(i){ i.validade=normData(i.validade); i.manipulacao=normData(i.manipulacao); i.data=normData(i.data); return i; });
+        save('entradas', data.entradas);
+      }
       if(data.descartes && data.descartes.length>0) save('descartes', data.descartes);
       if(data.fechamentos && data.fechamentos.length>0) save('fechamentos', data.fechamentos);
       callback(true);
@@ -504,6 +510,28 @@ function fmtDias(s){
 }
 function fmtPeso(v){ if(!v&&v!==0) return '0,000 kg'; return parseFloat(v).toFixed(3).replace('.',',')+' kg'; }
 function hoje(){ return new Date().toISOString().split('T')[0]; }
+
+// Normaliza qualquer formato de data para YYYY-MM-DD
+function normData(val){
+  if(!val) return '';
+  var s = String(val);
+  // Já está no formato correto
+  if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
+  // Formato com T (ISO): 2026-06-13T00:00:00
+  var m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if(m) return m[1];
+  // Formato Date do JS: Sat Jun 13 2026...
+  try {
+    var d = new Date(val);
+    if(!isNaN(d.getTime())){
+      var y = d.getFullYear();
+      var mo = String(d.getMonth()+1).padStart(2,'0');
+      var dy = String(d.getDate()).padStart(2,'0');
+      return y+'-'+mo+'-'+dy;
+    }
+  } catch(e){}
+  return s;
+}
 function dotColor(d){ if(d<0||d<=2) return '#e05050'; if(d<=5) return '#e0a030'; return '#50a870'; }
 
 // ============================================================
