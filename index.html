@@ -235,6 +235,7 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
   <div class="app-content">
     <!-- HOME -->
     <div class="tab on" id="tab-home">
+      <div style="text-align:center;padding:8px 0 4px;color:var(--text2);font-size:13px;font-weight:500;" id="clock-home"></div>
       <div class="card">
         <div class="card-title">⚠️ Alertas de Vencimento</div>
         <div id="home-alertas"></div>
@@ -244,7 +245,10 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <div id="home-estoque"></div>
       </div>
       <div class="card">
-        <div class="card-title">🧮 Contagem Diária</div>
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>🧮 Contagem Diária</span>
+          <span id="ultimo-fech" style="font-size:10px;color:var(--text2);"></span>
+        </div>
         <div id="home-items"></div>
       </div>
     </div>
@@ -325,7 +329,10 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
     <!-- FECHAMENTO -->
     <div class="tab" id="tab-fechamento">
       <div class="card">
-        <div class="card-title">📋 Fechamento Diário</div>
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📋 Fechamento Diário</span>
+          <span id="clock-fech" style="font-size:12px;color:var(--accent);font-weight:600;"></span>
+        </div>
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Informe o peso atual de cada item em estoque.</p>
         <div id="fech-list"></div>
         <div class="card-title mt16">🧮 Contagem de Estoque Geral</div>
@@ -663,6 +670,31 @@ function forceSync(){
   });
 }
 
+function fmtDateTime(d){
+  d = d || new Date();
+  var dia  = String(d.getDate()).padStart(2,'0');
+  var mes  = String(d.getMonth()+1).padStart(2,'0');
+  var ano  = d.getFullYear();
+  var h    = String(d.getHours()).padStart(2,'0');
+  var m    = String(d.getMinutes()).padStart(2,'0');
+  var s    = String(d.getSeconds()).padStart(2,'0');
+  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  return dias[d.getDay()]+', '+dia+'/'+mes+'/'+ano+' '+h+':'+m+':'+s;
+}
+
+function startClock(){
+  function tick(){
+    var now = new Date();
+    var txt = fmtDateTime(now);
+    var h = document.getElementById('clock-home');
+    var f = document.getElementById('clock-fech');
+    if(h) h.textContent = txt;
+    if(f) f.textContent = txt;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 function initApp(){
   // Mostra loading e tenta carregar do Sheets
   showLoading(true);
@@ -672,6 +704,7 @@ function initApp(){
     etUpdate();
     showTab('home');
     checkAlertas();
+    startClock();
     if(!ok) showSyncStatus('⚠️ Offline — dados locais');
     else showSyncStatus('✅ Dados atualizados');
   });
@@ -787,6 +820,15 @@ function renderHome(){
       var qtdInfo = item.qtd ? ' · '+item.qtd+' '+( item.qtd===1?'recipiente':'recipientes') : '';
       return '<div class="stock-item"><div class="stock-dot" style="background:'+cor+'"></div><div class="stock-info"><div class="stock-name">'+(p?p.nome:item.nome)+'</div><div class="stock-meta">'+item.cond+qtdInfo+' · Val: '+fmtDate(item.validade)+'</div></div><div class="stock-right"><div class="stock-peso">'+fmtPeso(item.peso)+'</div><div class="stock-days" style="color:'+cor+'">'+fmtDias(item.validade)+'</div></div></div>';
     }).join('');
+  }
+
+  // Último fechamento
+  var ufEl = document.getElementById('ultimo-fech');
+  var uf = load('ultimo_fechamento', null);
+  if(ufEl){
+    if(uf && typeof uf === 'object') ufEl.textContent = 'Último: '+uf.dt+' · '+uf.resp;
+    else if(uf) ufEl.textContent = 'Último: '+uf;
+    else ufEl.textContent = 'Sem registro hoje';
   }
 
   // Contagem diária
@@ -1119,6 +1161,7 @@ function confirmarFechamento(){
   if(!ok) return alert('Preencha o peso atual de todos os itens!');
   save('stock',stock);
   save('fechamentos',fechs);
+  save('ultimo_fechamento', { dt: fmtDateTime(new Date()), resp: currentUser ? currentUser.nome : '—' });
 
   // Salva contagem dos itens gerais
   var items = getItems();
