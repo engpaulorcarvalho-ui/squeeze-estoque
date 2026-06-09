@@ -466,7 +466,16 @@ function getStock(){return load('stock',[]);}
 function getEntradas(){return load('entradas',[]);}
 function getDescartes(){return load('descartes',[]);}
 function getFechs(){return load('fechamentos',[]);}
-function getItems(){return load('items',DEFAULT_ITEMS);}
+function getItems(){
+  var saved=load('items',null);
+  if(!saved||saved.length===0)return DEFAULT_ITEMS;
+  // Merge saved qtd with DEFAULT_ITEMS conv config
+  return DEFAULT_ITEMS.map(function(def){
+    var s=saved.filter(function(x){return x.id===def.id;})[0];
+    if(s){return {id:def.id,nome:def.nome,unidade:def.unidade,minimo:def.minimo,qtd:s.qtd||0,conv:def.conv};}
+    return def;
+  });
+}
 function getInd(){return load('indicadores',{aval:null,canc:null,parc:null,atra:null,semana:'',atualizado:''});}
 
 // ============================================================
