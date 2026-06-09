@@ -732,7 +732,7 @@ var selUser = null;
 var pinVal  = '';
 
 function buildUserList(){
-  var users = getUsers();
+  var users = DEFAULT_USERS;
   var el = document.getElementById('user-list');
   el.innerHTML = '';
   users.forEach(function(u){
@@ -745,7 +745,7 @@ function buildUserList(){
 }
 
 function selectUser(nome){
-  var users = getUsers();
+  var users = DEFAULT_USERS;
   selUser = null;
   for(var i=0;i<users.length;i++){ if(users[i].nome===nome){ selUser=users[i]; break; } }
   if(!selUser) return;
@@ -1731,7 +1731,7 @@ var selUser = null;
 var pinVal  = '';
 
 function buildUserList(){
-  var users = getUsers();
+  var users = DEFAULT_USERS;
   var el = document.getElementById('user-list');
   el.innerHTML = '';
   users.forEach(function(u){
@@ -1744,7 +1744,7 @@ function buildUserList(){
 }
 
 function selectUser(nome){
-  var users = getUsers();
+  var users = DEFAULT_USERS;
   selUser = null;
   for(var i=0;i<users.length;i++){ if(users[i].nome===nome){ selUser=users[i]; break; } }
   if(!selUser) return;
@@ -2440,7 +2440,23 @@ function renderHist(){
 // ============================================================
 // INICIALIZA
 // ============================================================
-buildUserList();
+try {
+  buildUserList();
+} catch(e) {
+  console.error('buildUserList error:', e);
+  // Fallback: força a lista manualmente
+  var el = document.getElementById('user-list');
+  if(el) {
+    el.innerHTML = '';
+    DEFAULT_USERS.forEach(function(u){
+      var btn = document.createElement('button');
+      btn.className = 'user-btn';
+      btn.innerHTML = '<div class="user-avatar">'+u.nome.charAt(0).toUpperCase()+'</div>'+u.nome+(u.admin?' <span style="font-size:11px;color:var(--accent);margin-left:4px;">admin</span>':'');
+      btn.onclick = function(){ selectUser(u.nome); };
+      el.appendChild(btn);
+    });
+  }
+}
 </script>
 </body>
 </html>
